@@ -19,3 +19,10 @@ If length =1, it means data length is 1 byte If length =2, it means data length 
 
 --> Parity: This field contains the security check of the packet. It is calculated as bitwise parity over the header and payload bytes of the packet.
 
+In this design there are 4 sub blocks :
+
+1) FIFO (3 blocks)
+2) Synchronizer
+3) FSM
+4) Register
+
