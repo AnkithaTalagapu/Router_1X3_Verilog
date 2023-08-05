@@ -58,8 +58,7 @@ Read and Write operation can be done simultaneously
 
 SYNCHRONIZER :
 
-
-➤ Detect_add and data_in signals are used to select a FIFO till a packet routing is over for selected FIFO
+➤ detect_addr and data_in signals are used to select a FIFO till a packet routing is over for selected FIFO
 ➤ Signal fifo_full signal is asserted based on full status of FIFO_0 or FIFO_1 or FIFO_2.
 ➤ If data_in = 2'b00 then fifo_full = full_0
 ➤ If data_in = 2'b01 then fifo_full = full_1
@@ -76,19 +75,18 @@ The write_enb_reg signal is used to generate write_enb signal for the write oper
 
 FSM:
 
-
-STATE-DECODE_ADDRESS
+DECODE_ADDRESS:
  This is the initial reset state.
  Signal detect_add is asserted in this state which is used to detect an incoming packet. It is also used to latch
 the first byte as a header byte.
 
-STATE-LOAD_FIRST_DATA
+LOAD_FIRST_DATA:
  Signal lfd_state is asserted in this state which is used to load the first data byte to the FIFO.
  Signal busy is also asserted in this state so that header byte that is already latched doesn’t update to a new
 value for the current packet.
  This state is changed to LOAD_DATA state unconditionally in the next clock cycle.
 
-STATE-LOAD_DATA
+LOAD_DATA:
  In this state the signal ld_state is asserted which is used to load the payload data to the FIFO.
  Signal busy is de asserted in this state, so that ROUTER can receive the new data from input source every
 clock cycle,
@@ -97,27 +95,27 @@ to the selected FIFO.
  This state transits to LAOD_PARITY state when pkt_valid goes low and to FIFO_FULL_STATE when FIFO
 is full.
 
-STATE-LOAD_PARITY
+LOAD_PARITY:
  In this state the last byte is latched which is the parity byte.
  It goes unconditionally to the state CHECK_PARITY_ERROR.
  Signal busy is asserted so that ROUTER doesn’t accepts any new data.
  write_enb_reg is made high for latching the parity byte to FIFO.
 
-STATE-FIFO_FULL_STATE
+FIFO_FULL_STATE:
  busy signal is made high and write_enb_reg signal is made low.
  Signal full_state is asserted which detects the FIFO full state.
 
-STATE-LOAD_AFTER_FULL
+LOAD_AFTER_FULL:
  In this state laf_state signal is asserted which is used to latch the data after FIFO_FULL_STATE.
  Signal busy & write_enb_reg is asserted.
  It checks for parity_done signal and if it is high, shows that LOAD_PARITY state has been detected and it
 goes to the state DECODE_ADDRESS.
  If low_packet_valid is high it goes to LOAD_PARITY state otherwise it goes back to the LOAD_DATA state.
 
-STATE-WAIT_TILL_EMPTY
+WAIT_TILL_EMPTY:
  Busy signal is made high and write_enb_reg signal is made low.
 
-STATE-CHECK_PARITY_ERROR
+CHECK_PARITY_ERROR:
  In this state rst_int_reg signal is generated, which is used to reset low_packet_valid signal.
  This state changes to DECODE_ADDRESS when FIFO is not full and to FIFO_FULL_STATE when FIFO is
 full.
@@ -126,7 +124,6 @@ full.
 ------------------------------------------------------------------------------------------------------------------------------------------
 
 REGISTER:
-
 
 This module implements 4 internal registers in order to hold a header byte, FIFO full state byte, internal parity and
 packet parity byte. All the registers in this module are latched on the rising edge of the clock.
@@ -137,9 +134,7 @@ packet parity byte. All the registers in this module are latched on the rising e
 	 When signals laf_state and low_pkt_valid both are high and the previous value of parity_done is low.
 
  detect_addr signal is used to reset parity_done signal.
-
  rst_int_reg signal is used to reset low_pkt_valid signal.
-
  Signal low_pkt_valid is high when ld_state is high and pkt_valid is low. Low_packet_valid shows
 that pkt_valid for current state has been deasserted.
  First data byte i.e., header is latched inside an internal register when detect_add and pkt_valid signals
